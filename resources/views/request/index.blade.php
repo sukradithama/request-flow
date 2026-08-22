@@ -4,8 +4,9 @@
 @section('content')
 <div class="container">
     <div class="card mt-5">
-        <div class="card-header">
+        <div class="d-flex justify-content-between card-header">
             Daftar Request
+            <a href="{{route('CreateRequest')}}" class="btn btn-success btn-sm">Create</a>
         </div>
         <div class="card-body">
             <table class="table">
@@ -20,28 +21,29 @@
                         <th>Status</th>
                         <th>Priority</th>
                         <th>Created At</th>
-                        <th>Updated At</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                    <?php $x=1; ?>
+                    @foreach($requests as $request)
                     <tr>
-                        <td>1</td>
-                        <td>R001</td>
-                        <td>Equipment</td>
-                        <td>John</td>
-                        <td>General Affair</td>
-                        <td>Alila's PC need to service.</td>
-                        <td><span class="badge text-bg-warning"> In Progress</span></td>
-                        <td><span class="badge text-bg-info">Medium</span></td>
-                        <td>11 - 11 - 2005</td>
-                        <td>11 - 11 - 2005</td>
+                        <td><?php echo $x++; ?></td>
+                        <td>{{ $request->id }}</td>
+                        <td>{{ $request->category->category }}</td>
+                        <td>{{ $request->user->name }}</td>
+                        <td>{{ $request->assignee?->name }}</td>
+                        <td>{{ $request->title }}</td>
+                        <td><span class="badge text-bg-danger">{{ $request->status }}</span></td>
+                        <td><span class="badge text-bg-info">{{ $request->priority }}</span></td>
+                        <td>{{ $request->created_at }}</td>
                         <td>
                             <a href="#" class="btn btn-success btn-sm">Update</a>
                             <a href="#" class="btn btn-warning btn-sm">Detail</a>
                             <button type="button" class="btn btn-danger btn-sm">Delete</button>
                         </td>
                     </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
