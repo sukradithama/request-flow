@@ -27,6 +27,23 @@
                 <tbody>
                     <?php $x = 1; ?>
                     @foreach($requests as $request)
+                    @php
+                    $statusClass = match($request->status) {
+                    'pending' => 'text-bg-warning',
+                    'in_progress' => 'text-bg-primary',
+                    'resolved' => 'text-bg-success',
+                    'rejected' => 'text-bg-danger',
+                    default => 'text-bg-secondary',
+                    };
+
+                    $priorityClass = match($request->priority) {
+                    'critical' => 'text-bg-danger',
+                    'high' => 'text-bg-warning',
+                    'medium' => 'text-bg-info',
+                    'low' => 'text-bg-success',
+                    default => 'text-bg-secondary',
+                    };
+                    @endphp
                     <tr>
                         <td><?php echo $x++; ?></td>
                         <td>{{ $request->id }}</td>
@@ -34,11 +51,19 @@
                         <td>{{ $request->user->name }}</td>
                         <td>{{ $request->assignee?->name }}</td>
                         <td>{{ $request->title }}</td>
-                        <td><span class="badge text-bg-danger">{{ $request->status }}</span></td>
-                        <td><span class="badge text-bg-info">{{ $request->priority }}</span></td>
+                        <td>
+                            <span class="badge {{ $statusClass }}">
+                                {{ $request->status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {{ $priorityClass }}">
+                                {{ ucfirst($request->priority) }}
+                            </span>
+                        </td>
                         <td>{{ $request->created_at }}</td>
                         <td>
-                            <a href="#" class="btn btn-success btn-sm"><i class="bi bi-pencil-square"></i></a>
+                            <a href="{{ route('EditRequest', $request->slug) }}" class="btn btn-success btn-sm"><i class="bi bi-pencil-square"></i></a>
                             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal{{$request->id}}">
                                 <i class="bi bi-eye"></i>
                             </button>
@@ -126,7 +151,16 @@
                                 </div>
                             </div>
                             <!-- Show Modal -->
-                            <button type="button" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                            <form
+                                action="{{ route('DeleteRequest', $request->slug) }}"
+                                method="POST"
+                                class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @endforeach
