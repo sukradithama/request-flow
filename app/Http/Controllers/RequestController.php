@@ -15,8 +15,8 @@ class RequestController extends Controller
      */
     public function index()
     {
-        $requests=RequestModel::get();
-        return view('request.index',compact('requests'));
+        $requests = RequestModel::get();
+        return view('request.index', compact('requests'));
     }
 
     /**
@@ -68,24 +68,55 @@ class RequestController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $slug)
     {
-        //
+        $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+        $categories = Category::where('is_active', true)->get();
+        $users = User::where('is_active', true)->get();
+        return view('request.edit', compact('requestData', 'categories', 'users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $slug)
     {
-        //
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'user_id' => 'required|exists:users,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'priority' => 'required|in:low,medium,high,critical',
+        ]);
+
+        $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+
+        $requestData->update([
+            'category_id' => $validated['category_id'],
+            'user_id' => $validated['user_id'],
+            'assigned_to' => $validated['assigned_to'] ?? null,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'priority' => $validated['priority'],
+        ]);
+
+        return redirect()
+            ->route('IndexRequest')
+            ->with('success', 'Request berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $slug)
     {
-        //
+        $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+
+        $requestData->delete();
+
+        return redirect()
+            ->route('IndexRequest')
+            ->with('success', 'Request berhasil dihapus.');
     }
 }
