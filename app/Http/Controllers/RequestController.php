@@ -106,6 +106,23 @@ class RequestController extends Controller
             ->with('success', 'Request berhasil diperbarui.');
     }
 
+    public function updateStatus(Request $request, string $slug)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,in_progress,resolved,rejected',
+        ]);
+
+        $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+
+        $requestData->update([
+            'status' => $validated['status'],
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Status berhasil diperbarui.');
+    }
+
     /**
      * Remove the specified resource from storage.
      */

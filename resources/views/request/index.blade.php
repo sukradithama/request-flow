@@ -52,9 +52,37 @@
                         <td>{{ $request->assignee?->name }}</td>
                         <td>{{ $request->title }}</td>
                         <td>
-                            <span class="badge {{ $statusClass }}">
-                                {{ $request->status }}
-                            </span>
+                            <form
+                                action="{{ route('UpdateRequestStatus', $request->slug) }}"
+                                method="POST">
+                                @csrf
+                                @method('PUT')
+
+                                <select
+                                    name="status"
+                                    class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                    <option value="pending"
+                                        {{ $request->status == 'pending' ? 'selected' : '' }}>
+                                        Pending
+                                    </option>
+
+                                    <option value="in_progress"
+                                        {{ $request->status == 'in_progress' ? 'selected' : '' }}>
+                                        In Progress
+                                    </option>
+
+                                    <option value="resolved"
+                                        {{ $request->status == 'resolved' ? 'selected' : '' }}>
+                                        Resolved
+                                    </option>
+
+                                    <option value="rejected"
+                                        {{ $request->status == 'rejected' ? 'selected' : '' }}>
+                                        Rejected
+                                    </option>
+                                </select>
+                            </form>
                         </td>
                         <td>
                             <span class="badge {{ $priorityClass }}">
