@@ -1,19 +1,36 @@
 @extends('layouts.app')
-@section('title','Request Dashboard')
+
+@section('title', 'Request Dashboard')
 
 @section('content')
+
 <div class="container">
+
     <div class="card mt-5">
-        <div class="d-flex justify-content-between card-header">
-            Daftar Request
-            <a href="{{route('CreateRequest')}}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle-fill"></i></a>
+
+        <div class="d-flex justify-content-between align-items-center card-header">
+
+            <span>Daftar Request</span>
+
+            {{-- Create Request --}}
+            @if(in_array(Auth::user()->role, ['requester', 'admin']))
+            <a
+                href="{{ route('CreateRequest') }}"
+                class="btn btn-success btn-sm">
+                <i class="bi bi-plus-circle-fill"></i>
+            </a>
+            @endif
+
         </div>
+
         <div class="card-body">
-            <table class="table">
+
+            <table class="table align-middle">
+
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Id Request</th>
+                        <th>ID Request</th>
                         <th>Category</th>
                         <th>User</th>
                         <th>Assigned To</th>
@@ -24,10 +41,17 @@
                         <th>Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
-                    <?php $x = 1; ?>
-                    @foreach($requests as $request)
+
                     @php
+                    $x = 1;
+                    @endphp
+
+                    @foreach($requests as $request)
+
+                    @php
+
                     $statusClass = match($request->status) {
                     'pending' => 'text-bg-warning',
                     'in_progress' => 'text-bg-primary',
@@ -43,15 +67,46 @@
                     'low' => 'text-bg-success',
                     default => 'text-bg-secondary',
                     };
+
                     @endphp
+
                     <tr>
-                        <td><?php echo $x++; ?></td>
-                        <td>{{ $request->id }}</td>
-                        <td>{{ $request->category->category }}</td>
-                        <td>{{ $request->user->name }}</td>
-                        <td>{{ $request->assignee?->name }}</td>
-                        <td>{{ $request->title }}</td>
+
+                        {{-- No --}}
                         <td>
+                            {{ $x++ }}
+                        </td>
+
+                        {{-- ID --}}
+                        <td>
+                            R{{ str_pad($request->id, 3, '0', STR_PAD_LEFT) }}
+                        </td>
+
+                        {{-- Category --}}
+                        <td>
+                            {{ $request->category->category }}
+                        </td>
+
+                        {{-- User --}}
+                        <td>
+                            {{ $request->user->name }}
+                        </td>
+
+                        {{-- Assigned To --}}
+                        <td>
+                            {{ $request->assignee?->name ?? 'Not Assigned' }}
+                        </td>
+
+                        {{-- Title --}}
+                        <td>
+                            {{ $request->title }}
+                        </td>
+
+                        {{-- Status --}}
+                        <td>
+
+                            @if(in_array(Auth::user()->role, ['staff', 'admin']))
+
                             <form
                                 action="{{ route('UpdateRequestStatus', $request->slug) }}"
                                 method="POST">
@@ -62,140 +117,287 @@
                                     name="status"
                                     class="form-select form-select-sm"
                                     onchange="this.form.submit()">
-                                    <option value="pending"
-                                        {{ $request->status == 'pending' ? 'selected' : '' }}>
+
+                                    <option
+                                        value="pending"
+                                        {{ $request->status === 'pending' ? 'selected' : '' }}>
                                         Pending
                                     </option>
 
-                                    <option value="in_progress"
-                                        {{ $request->status == 'in_progress' ? 'selected' : '' }}>
+                                    <option
+                                        value="in_progress"
+                                        {{ $request->status === 'in_progress' ? 'selected' : '' }}>
                                         In Progress
                                     </option>
 
-                                    <option value="resolved"
-                                        {{ $request->status == 'resolved' ? 'selected' : '' }}>
+                                    <option
+                                        value="resolved"
+                                        {{ $request->status === 'resolved' ? 'selected' : '' }}>
                                         Resolved
                                     </option>
 
-                                    <option value="rejected"
-                                        {{ $request->status == 'rejected' ? 'selected' : '' }}>
+                                    <option
+                                        value="rejected"
+                                        {{ $request->status === 'rejected' ? 'selected' : '' }}>
                                         Rejected
                                     </option>
+
                                 </select>
+
                             </form>
+
+                            @else
+
+                            <span class="badge {{ $statusClass }}">
+                                {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                            </span>
+
+                            @endif
+
                         </td>
+
+                        {{-- Priority --}}
                         <td>
                             <span class="badge {{ $priorityClass }}">
                                 {{ ucfirst($request->priority) }}
                             </span>
                         </td>
-                        <td>{{ $request->created_at }}</td>
+
+                        {{-- Created At --}}
                         <td>
-                            <a href="{{ route('EditRequest', $request->slug) }}" class="btn btn-success btn-sm"><i class="bi bi-pencil-square"></i></a>
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modal{{$request->id}}">
+                            {{ $request->created_at->format('d-m-Y H:i') }}
+                        </td>
+
+                        {{-- Action --}}
+                        <td>
+
+                            {{-- Edit --}}
+                            @if(in_array(Auth::user()->role, ['requester', 'admin']))
+                            <a
+                                href="{{ route('EditRequest', $request->slug) }}"
+                                class="btn btn-success btn-sm">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            @endif
+
+
+                            {{-- Detail --}}
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modal{{ $request->id }}">
                                 <i class="bi bi-eye"></i>
                             </button>
-                            <!-- Show Modal -->
-                            <div class="modal fade" id="modal{{$request->id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="modal-body">
 
-                                                <div class="row g-3">
 
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">ID Request</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->id }}
-                                                        </p>
-                                                    </div>
+                            {{-- Delete --}}
+                            @if(Auth::user()->role === 'admin')
 
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Name</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->user->name }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Email</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->user->email }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Status</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->status }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Status</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->priority }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label fw-bold">Subject</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->subject }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-12">
-                                                        <label class="form-label fw-bold">Description</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->description }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Created At</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->created_at }}
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="col-md-12">
-                                                        <label class="form-label fw-bold">Updated At</label>
-                                                        <p class="form-control-plaintext">
-                                                            {{ $request->updated_at }}
-                                                        </p>
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Show Modal -->
                             <form
                                 action="{{ route('DeleteRequest', $request->slug) }}"
                                 method="POST"
                                 class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger btn-sm">
                                     <i class="bi bi-trash"></i>
                                 </button>
+
                             </form>
+
+                            @endif
+
                         </td>
+
                     </tr>
+
+
+                    {{-- ================= MODAL DETAIL ================= --}}
+
+                    <div
+                        class="modal fade"
+                        id="modal{{ $request->id }}"
+                        tabindex="-1"
+                        aria-hidden="true">
+
+                        <div class="modal-dialog modal-lg">
+
+                            <div class="modal-content">
+
+                                <div class="modal-header">
+
+                                    <h5 class="modal-title">
+                                        Request R{{ str_pad($request->id, 3, '0', STR_PAD_LEFT) }}
+                                    </h5>
+
+                                    <button
+                                        type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"></button>
+
+                                </div>
+
+                                <div class="modal-body">
+
+                                    <div class="row g-3">
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Requester
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->user->name }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Email
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->user->email }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Category
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->category->category }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Assigned To
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->assignee?->name ?? 'Not Assigned' }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Status
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                <span class="badge {{ $statusClass }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $request->status)) }}
+                                                </span>
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Priority
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                <span class="badge {{ $priorityClass }}">
+                                                    {{ ucfirst($request->priority) }}
+                                                </span>
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-12">
+
+                                            <label class="form-label fw-bold">
+                                                Title
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->title }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-12">
+
+                                            <label class="form-label fw-bold">
+                                                Description
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->description }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Created At
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->created_at->format('d-m-Y H:i') }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="col-md-6">
+
+                                            <label class="form-label fw-bold">
+                                                Updated At
+                                            </label>
+
+                                            <p class="form-control-plaintext">
+                                                {{ $request->updated_at->format('d-m-Y H:i') }}
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                     @endforeach
+
                 </tbody>
+
             </table>
+
         </div>
+
     </div>
+
 </div>
 
 @endsection

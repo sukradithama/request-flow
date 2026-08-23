@@ -39,7 +39,19 @@
 
                             <li>
                                 <span class="dropdown-item-text">
+                                    <strong>{{ Auth::user()->name }}</strong>
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="dropdown-item-text">
                                     {{ Auth::user()->email }}
+                                </span>
+                            </li>
+
+                            <li>
+                                <span class="dropdown-item-text">
+                                    Role: {{ ucfirst(Auth::user()->role) }}
                                 </span>
                             </li>
 
@@ -48,9 +60,7 @@
                             </li>
 
                             <li>
-                                <form
-                                    action="{{ route('Logout') }}"
-                                    method="POST">
+                                <form action="{{ route('Logout') }}" method="POST">
                                     @csrf
 
                                     <button

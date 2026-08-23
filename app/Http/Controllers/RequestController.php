@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Request as RequestModel;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class RequestController extends Controller
@@ -15,7 +16,35 @@ class RequestController extends Controller
      */
     public function index()
     {
-        $requests = RequestModel::get();
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+
+            $requests = RequestModel::with([
+                'category',
+                'user',
+                'assignee'
+            ])->get();
+        } elseif ($user->role === 'staff') {
+
+            $requests = RequestModel::with([
+                'category',
+                'user',
+                'assignee'
+            ])
+                ->where('assigned_to', $user->id)
+                ->get();
+        } else {
+
+            $requests = RequestModel::with([
+                'category',
+                'user',
+                'assignee'
+            ])
+                ->where('user_id', $user->id)
+                ->get();
+        }
+
         return view('request.index', compact('requests'));
     }
 
@@ -36,16 +65,14 @@ class RequestController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required',
-            'user_id' => 'required',
-            'assigned_to' => 'nullable',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
         ]);
         $newRequest = RequestModel::create([
             'category_id' => $validated['category_id'],
-            'user_id' => $validated['user_id'],
-            'assigned_to' => $validated['assigned_to'] ?? null,
+            'user_id' => Auth::id(),
+            'assigned_to' => null,
             'title' => $validated['title'],
             'description' => $validated['description'],
             'status' => 'pending',
