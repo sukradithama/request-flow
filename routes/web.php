@@ -1,7 +1,15 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RequestController;
 use Illuminate\Support\Facades\Route;
+
+// Authentication
+Route::get('/', [AuthController::class, 'showLogin'])->name('LoginForm');
+Route::post('/', [AuthController::class, 'login'])->name('Login');
+Route::get('/register', [AuthController::class, 'showRegister'])->name('RegisterForm');
+Route::post('/register', [AuthController::class, 'register'])->name('Register');
+Route::post('/logout', [AuthController::class, 'logout'])->name('Logout');
 
 // Request
 Route::get('/request',[RequestController::class,'index'])->name('IndexRequest');
@@ -12,4 +20,6 @@ Route::get('/request/{slug}/edit',[RequestController::class,'edit'])->name('Edit
 Route::put('/request/{slug}',[RequestController::class,'update'])->name('UpdateRequest');
 Route::put('/request/{slug}/status',[RequestController::class,'updateStatus'])->name('UpdateRequestStatus');
 Route::delete('/request/{slug}',[RequestController::class,'destroy'])->name('DeleteRequest');
+
+
 
