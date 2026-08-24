@@ -14,38 +14,58 @@ class RequestController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
+        $search = $request->input('search');
+
+        $query = RequestModel::with([
+            'category',
+            'user',
+            'assignee'
+        ]);
+
+        // Role-based access
         if ($user->role === 'admin') {
 
-            $requests = RequestModel::with([
-                'category',
-                'user',
-                'assignee'
-            ])->get();
+            // Admin bisa melihat semua request
+
         } elseif ($user->role === 'staff') {
 
-            $requests = RequestModel::with([
-                'category',
-                'user',
-                'assignee'
-            ])
-                ->where('assigned_to', $user->id)
-                ->get();
+            // Staff hanya melihat request yang ditugaskan kepadanya
+            $query->where('assigned_to', $user->id);
         } else {
 
-            $requests = RequestModel::with([
-                'category',
-                'user',
-                'assignee'
-            ])
-                ->where('user_id', $user->id)
-                ->get();
+            // Requester hanya melihat request miliknya
+            $query->where('user_id', $user->id);
         }
 
-        return view('request.index', compact('requests'));
+        // Search
+        $query->when($search, function ($query, $search) {
+
+            $query->where(function ($query) use ($search) {
+
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+
+                    ->orWhereHas('user', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhereHas('assignee', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
+            });
+        });
+
+        $requests = $query->get();
+
+        return view('request.index', compact(
+            'requests',
+            'search'
+        ));
     }
 
     /**
@@ -64,7 +84,8 @@ class RequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required','exist:categories,id,is_active,1',
+            'category_id' => 'required',
+            'exist:categories,id,is_active,1',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',

@@ -5,8 +5,32 @@
 @section('content')
 
 <div class="container">
+    <form
+        action="{{ route('IndexRequest') }}"
+        method="GET"
+        class="d-flex gap-2 mt-5">
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search request..."
+            value="{{ $search ?? '' }}">
 
-    <div class="card mt-5">
+        <button
+            type="submit"
+            class="btn btn-primary">
+            <i class="bi bi-search"></i>
+        </button>
+
+        @if($search)
+        <a
+            href="{{ route('IndexRequest') }}"
+            class="btn btn-secondary">
+            Clear
+        </a>
+        @endif
+    </form>
+    <div class="card mt-2">
 
         <div class="d-flex justify-content-between align-items-center card-header">
 
