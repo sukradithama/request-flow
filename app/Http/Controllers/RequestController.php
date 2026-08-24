@@ -64,7 +64,7 @@ class RequestController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required',
+            'category_id' => 'required','exist:categories,id,is_active,1',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
@@ -111,7 +111,7 @@ class RequestController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'user_id' => 'required|exists:users,id',
-            'assigned_to' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable|exists:users,id,role,staff',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
