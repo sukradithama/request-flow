@@ -4,6 +4,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RequestController;
 use Illuminate\Support\Facades\Route;
 
+
+
 // Authentication
 Route::get('/', [AuthController::class, 'showLogin'])->name('LoginForm');
 Route::post('/', [AuthController::class, 'login'])->name('Login');

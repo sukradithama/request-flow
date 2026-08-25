@@ -5,10 +5,94 @@
 @section('content')
 
 <div class="container">
+    {{-- Dashboard Summary --}}
+    <div class="row g-3 mt-5">
+
+        {{-- Total --}}
+        <div class="col-md">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">
+                        Total
+                    </h6>
+
+                    <h3 class="mb-0">
+                        {{ $total }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- Pending --}}
+        <div class="col-md">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">
+                        Pending
+                    </h6>
+
+                    <h3 class="mb-0">
+                        {{ $pending }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- In Progress --}}
+        <div class="col-md">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">
+                        In Progress
+                    </h6>
+
+                    <h3 class="mb-0">
+                        {{ $inProgress }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- Completed --}}
+        <div class="col-md">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">
+                        Completed
+                    </h6>
+
+                    <h3 class="mb-0">
+                        {{ $completed }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- High Priority --}}
+        <div class="col-md">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">
+                        High Priority
+                    </h6>
+
+                    <h3 class="mb-0">
+                        {{ $highPriority }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <form
         action="{{ route('IndexRequest') }}"
         method="GET"
-        class="mt-5">
+        class="mt-3">
 
         <div class="row g-2">
 

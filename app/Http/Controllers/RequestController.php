@@ -15,114 +15,134 @@ class RequestController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $search = $request->input('search');
-    $status = $request->input('status');
-    $priority = $request->input('priority');
-    $categoryId = $request->input('category_id');
+        // =========================
+        // BASE QUERY
+        // =========================
 
-    $query = RequestModel::with([
-        'category',
-        'user',
-        'assignee'
-    ]);
+        $baseQuery = RequestModel::query();
 
-    // =========================
-    // ROLE FILTER
-    // =========================
+        if ($user->role === 'admin') {
 
-    if ($user->role === 'admin') {
+            // Admin melihat semua request
 
-        // Admin dapat melihat semua request
+        } elseif ($user->role === 'staff') {
 
-    } elseif ($user->role === 'staff') {
+            $baseQuery->where('assigned_to', $user->id);
+        } else {
 
-        // Staff hanya melihat request yang ditugaskan kepadanya
-        $query->where('assigned_to', $user->id);
-
-    } else {
-
-        // Requester hanya melihat request miliknya
-        $query->where('user_id', $user->id);
-    }
+            $baseQuery->where('user_id', $user->id);
+        }
 
 
-    // =========================
-    // SEARCH
-    // =========================
+        // =========================
+        // DASHBOARD
+        // =========================
 
-    $query->when($search, function ($query, $search) {
+        $total = (clone $baseQuery)->count();
 
-        $query->where(function ($query) use ($search) {
+        $pending = (clone $baseQuery)
+            ->where('status', 'pending')
+            ->count();
 
-            $query->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%")
+        $inProgress = (clone $baseQuery)
+            ->where('status', 'in_progress')
+            ->count();
 
-                ->orWhereHas('user', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%");
-                })
+        $completed = (clone $baseQuery)
+            ->where('status', 'resolved')
+            ->count();
 
-                ->orWhereHas('assignee', function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%");
-                });
+        $highPriority = (clone $baseQuery)
+            ->where('priority', 'high')
+            ->count();
 
+
+        // =========================
+        // SEARCH & FILTER QUERY
+        // =========================
+
+        $search = $request->input('search');
+        $status = $request->input('status');
+        $priority = $request->input('priority');
+        $categoryId = $request->input('category_id');
+
+        $query = RequestModel::with([
+            'category',
+            'user',
+            'assignee'
+        ]);
+
+        // Role
+        if ($user->role === 'admin') {
+        } elseif ($user->role === 'staff') {
+
+            $query->where('assigned_to', $user->id);
+        } else {
+
+            $query->where('user_id', $user->id);
+        }
+
+
+        // Search
+        $query->when($search, function ($query, $search) {
+
+            $query->where(function ($query) use ($search) {
+
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+
+                    ->orWhereHas('user', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    })
+
+                    ->orWhereHas('assignee', function ($query) use ($search) {
+                        $query->where('name', 'like', "%{$search}%");
+                    });
+            });
         });
 
-    });
+
+        // Status
+        $query->when($status, function ($query, $status) {
+            $query->where('status', $status);
+        });
 
 
-    // =========================
-    // FILTER STATUS
-    // =========================
-
-    $query->when($status, function ($query, $status) {
-
-        $query->where('status', $status);
-
-    });
+        // Priority
+        $query->when($priority, function ($query, $priority) {
+            $query->where('priority', $priority);
+        });
 
 
-    // =========================
-    // FILTER PRIORITY
-    // =========================
-
-    $query->when($priority, function ($query, $priority) {
-
-        $query->where('priority', $priority);
-
-    });
+        // Category
+        $query->when($categoryId, function ($query, $categoryId) {
+            $query->where('category_id', $categoryId);
+        });
 
 
-    // =========================
-    // FILTER CATEGORY
-    // =========================
+        $requests = $query->get();
 
-    $query->when($categoryId, function ($query, $categoryId) {
-
-        $query->where('category_id', $categoryId);
-
-    });
+        $categories = Category::where('is_active', 'active')->get();
 
 
-    $requests = $query->get();
-
-
-    // Categories untuk dropdown filter
-    $categories = Category::where('is_active', true)->get();;
-
-
-    return view('request.index', compact(
-        'requests',
-        'categories',
-        'search',
-        'status',
-        'priority',
-        'categoryId'
-    ));
-}
+        return view('request.index', compact(
+            'requests',
+            'categories',
+            'search',
+            'status',
+            'priority',
+            'categoryId',
+            'total',
+            'pending',
+            'inProgress',
+            'completed',
+            'highPriority'
+        ));
+    }
 
     /**
      * Show the form for creating a new resource.
