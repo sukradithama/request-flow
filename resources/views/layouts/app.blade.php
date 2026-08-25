@@ -19,7 +19,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link" href="#">Request</a>
+                    <a class="nav-link" href="{{route('IndexRequest')}}">Request</a>
                     <a class="nav-link" href="#">Category</a>
                     <a class="nav-link" href="#">User</a>
 

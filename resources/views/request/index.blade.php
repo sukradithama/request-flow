@@ -8,27 +8,169 @@
     <form
         action="{{ route('IndexRequest') }}"
         method="GET"
-        class="d-flex gap-2 mt-5">
-        <input
-            type="text"
-            name="search"
-            class="form-control"
-            placeholder="Search request..."
-            value="{{ $search ?? '' }}">
+        class="mt-5">
 
-        <button
-            type="submit"
-            class="btn btn-primary">
-            <i class="bi bi-search"></i>
-        </button>
+        <div class="row g-2">
 
-        @if($search)
-        <a
-            href="{{ route('IndexRequest') }}"
-            class="btn btn-secondary">
-            Clear
-        </a>
-        @endif
+            {{-- Search --}}
+            <div class="col-md-4">
+
+                <label for="search" class="form-label">
+                    Search
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    id="search"
+                    class="form-control"
+                    placeholder="Search request..."
+                    value="{{ $search ?? '' }}">
+
+            </div>
+
+
+            {{-- Status --}}
+            <div class="col-md-2">
+
+                <label for="status" class="form-label">
+                    Status
+                </label>
+
+                <select
+                    name="status"
+                    id="status"
+                    class="form-select">
+
+                    <option value="">
+                        All
+                    </option>
+
+                    <option
+                        value="pending"
+                        {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>
+                        Pending
+                    </option>
+
+                    <option
+                        value="in_progress"
+                        {{ ($status ?? '') === 'in_progress' ? 'selected' : '' }}>
+                        In Progress
+                    </option>
+
+                    <option
+                        value="resolved"
+                        {{ ($status ?? '') === 'resolved' ? 'selected' : '' }}>
+                        Resolved
+                    </option>
+
+                    <option
+                        value="rejected"
+                        {{ ($status ?? '') === 'rejected' ? 'selected' : '' }}>
+                        Rejected
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            {{-- Priority --}}
+            <div class="col-md-2">
+
+                <label for="priority" class="form-label">
+                    Priority
+                </label>
+
+                <select
+                    name="priority"
+                    id="priority"
+                    class="form-select">
+
+                    <option value="">
+                        All
+                    </option>
+
+                    <option
+                        value="critical"
+                        {{ ($priority ?? '') === 'critical' ? 'selected' : '' }}>
+                        Critical
+                    </option>
+
+                    <option
+                        value="high"
+                        {{ ($priority ?? '') === 'high' ? 'selected' : '' }}>
+                        High
+                    </option>
+
+                    <option
+                        value="medium"
+                        {{ ($priority ?? '') === 'medium' ? 'selected' : '' }}>
+                        Medium
+                    </option>
+
+                    <option
+                        value="low"
+                        {{ ($priority ?? '') === 'low' ? 'selected' : '' }}>
+                        Low
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            {{-- Category --}}
+            <div class="col-md-2">
+
+                <label for="category_id" class="form-label">
+                    Category
+                </label>
+
+                <select
+                    name="category_id"
+                    id="category_id"
+                    class="form-select">
+
+                    <option value="">
+                        All
+                    </option>
+
+                    @foreach ($categories as $category)
+
+                    <option
+                        value="{{ $category->id }}"
+                        {{ ($categoryId ?? '') == $category->id ? 'selected' : '' }}>
+                        {{ $category->category }}
+                    </option>
+
+                    @endforeach
+
+                </select>
+
+            </div>
+
+
+            {{-- Buttons --}}
+            <div class="col-md-2 d-flex align-items-end gap-2">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+                    <i class="bi bi-funnel"></i>
+                    Filter
+                </button>
+
+                <a
+                    href="{{ route('IndexRequest') }}"
+                    class="btn btn-secondary">
+                    Clear
+                </a>
+
+            </div>
+
+        </div>
+
     </form>
     <div class="card mt-2">
 

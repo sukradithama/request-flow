@@ -15,58 +15,114 @@ class RequestController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $search = $request->input('search');
+    $search = $request->input('search');
+    $status = $request->input('status');
+    $priority = $request->input('priority');
+    $categoryId = $request->input('category_id');
 
-        $query = RequestModel::with([
-            'category',
-            'user',
-            'assignee'
-        ]);
+    $query = RequestModel::with([
+        'category',
+        'user',
+        'assignee'
+    ]);
 
-        // Role-based access
-        if ($user->role === 'admin') {
+    // =========================
+    // ROLE FILTER
+    // =========================
 
-            // Admin bisa melihat semua request
+    if ($user->role === 'admin') {
 
-        } elseif ($user->role === 'staff') {
+        // Admin dapat melihat semua request
 
-            // Staff hanya melihat request yang ditugaskan kepadanya
-            $query->where('assigned_to', $user->id);
-        } else {
+    } elseif ($user->role === 'staff') {
 
-            // Requester hanya melihat request miliknya
-            $query->where('user_id', $user->id);
-        }
+        // Staff hanya melihat request yang ditugaskan kepadanya
+        $query->where('assigned_to', $user->id);
 
-        // Search
-        $query->when($search, function ($query, $search) {
+    } else {
 
-            $query->where(function ($query) use ($search) {
+        // Requester hanya melihat request miliknya
+        $query->where('user_id', $user->id);
+    }
 
-                $query->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
 
-                    ->orWhereHas('user', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%");
-                    })
+    // =========================
+    // SEARCH
+    // =========================
 
-                    ->orWhereHas('assignee', function ($query) use ($search) {
-                        $query->where('name', 'like', "%{$search}%");
-                    });
-            });
+    $query->when($search, function ($query, $search) {
+
+        $query->where(function ($query) use ($search) {
+
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")
+
+                ->orWhereHas('user', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                })
+
+                ->orWhereHas('assignee', function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%");
+                });
+
         });
 
-        $requests = $query->get();
+    });
 
-        return view('request.index', compact(
-            'requests',
-            'search'
-        ));
-    }
+
+    // =========================
+    // FILTER STATUS
+    // =========================
+
+    $query->when($status, function ($query, $status) {
+
+        $query->where('status', $status);
+
+    });
+
+
+    // =========================
+    // FILTER PRIORITY
+    // =========================
+
+    $query->when($priority, function ($query, $priority) {
+
+        $query->where('priority', $priority);
+
+    });
+
+
+    // =========================
+    // FILTER CATEGORY
+    // =========================
+
+    $query->when($categoryId, function ($query, $categoryId) {
+
+        $query->where('category_id', $categoryId);
+
+    });
+
+
+    $requests = $query->get();
+
+
+    // Categories untuk dropdown filter
+    $categories = Category::where('is_active', true)->get();;
+
+
+    return view('request.index', compact(
+        'requests',
+        'categories',
+        'search',
+        'status',
+        'priority',
+        'categoryId'
+    ));
+}
 
     /**
      * Show the form for creating a new resource.
