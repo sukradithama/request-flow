@@ -14,18 +14,6 @@
 
         <div class="card-body">
 
-            {{-- Validation Error --}}
-            @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
-
             <form
                 action="{{ route('UpdateRequest', $requestData->slug) }}"
                 method="POST">
@@ -80,7 +68,7 @@
                     <select
                         name="user_id"
                         id="user_id"
-                        class="form-select">
+                        class="form-select @error('user_id') is-invalid @enderror">
 
                         @foreach ($users as $user)
 
@@ -93,7 +81,11 @@
                         @endforeach
 
                     </select>
-
+                    @error('user_id')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
                 @else
@@ -130,7 +122,7 @@
                     <select
                         name="assigned_to"
                         id="assigned_to"
-                        class="form-select">
+                        class="form-select @error('assigned_to') is-invalid @enderror">
 
                         <option value="">
                             -- Not Assigned --
@@ -151,7 +143,11 @@
                         @endforeach
 
                     </select>
-
+                    @error('assigned_to')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
                 @else
@@ -187,11 +183,15 @@
                         type="text"
                         name="title"
                         id="title"
-                        class="form-control"
+                        class="form-control @error('title') is-invalid @enderror"
                         value="{{ old('title', $requestData->title) }}"
                         placeholder="Enter request title"
                         required>
-
+                    @error('title')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 
@@ -206,11 +206,15 @@
                     <textarea
                         name="description"
                         id="description"
-                        class="form-control"
+                        class="form-control @error('description') is-invalid @enderror"
                         rows="5"
                         placeholder="Describe your request..."
                         required>{{ old('description', $requestData->description) }}</textarea>
-
+                    @error('description')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 
@@ -225,7 +229,7 @@
                     <select
                         name="priority"
                         id="priority"
-                        class="form-select"
+                        class="form-select @error('priority') is-invalid @enderror"
                         required>
 
                         <option
@@ -253,7 +257,11 @@
                         </option>
 
                     </select>
-
+                    @error('priority')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 

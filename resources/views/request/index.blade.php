@@ -6,7 +6,7 @@
 
 <div class="container">
     {{-- Dashboard Summary --}}
-    <div class="row g-3 mt-5">
+    <div class="row g-3 mt-4">
 
         {{-- Total --}}
         <div class="col-md">
@@ -256,7 +256,7 @@
         </div>
 
     </form>
-    <div class="card mt-2">
+    <div class="card mt-3">
 
         <div class="d-flex justify-content-between align-items-center card-header">
 

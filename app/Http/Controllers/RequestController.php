@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Database\QueryException;
 
 class RequestController extends Controller
 {
@@ -111,7 +112,6 @@ class RequestController extends Controller
             $query->where('status', $status);
         });
 
-
         // Priority
         $query->when($priority, function ($query, $priority) {
             $query->where('priority', $priority);
@@ -159,23 +159,34 @@ class RequestController extends Controller
      */
     public function store(Request $request)
     {
+        
         $validated = $request->validate([
-            'category_id' => 'required',
-            'exist:categories,id,is_active,1',
+            'category_id' => 'required|exists:categories,id',
+            'assigned_to' => 'nullable|exists:users,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'priority' => 'required|in:low,medium,high,critical',
         ]);
-        $newRequest = RequestModel::create([
-            'category_id' => $validated['category_id'],
-            'user_id' => Auth::id(),
-            'assigned_to' => null,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'status' => 'pending',
-            'priority' => $validated['priority'],
-            'slug' => Str::slug($validated['title']) . '-' . uniqid(),
-        ]);
+        // dd($validated);
+        try {
+
+            RequestModel::create([
+                'category_id' => $validated['category_id'],
+                'user_id' => Auth::id(),
+                'assigned_to' => $validated['assigned_to'] ?? null,
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'status' => 'pending',
+                'priority' => $validated['priority'],
+                'slug' => Str::slug($validated['title']) . '-' . uniqid(),
+            ]);
+        } catch (QueryException $e) {
+
+            return back()
+                ->withInput()
+                ->with('error', 'Request gagal disimpan. Silakan coba lagi.');
+        }
+
         return redirect()
             ->route('IndexRequest')
             ->with('success', 'Request berhasil dibuat.');
@@ -184,9 +195,10 @@ class RequestController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $slug)
     {
-        // 
+        $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+        return view('request.index', compact('requestData'));
     }
 
     /**
@@ -195,6 +207,15 @@ class RequestController extends Controller
     public function edit(string $slug)
     {
         $requestData = RequestModel::where('slug', $slug)->firstOrFail();
+
+        $user = Auth::user();
+
+        abort_unless(
+            $user->role === 'admin' ||
+                ($user->role === 'requester' && $requestData->user_id === $user->id),
+            403
+        );
+
         $categories = Category::where('is_active', true)->get();
         $users = User::where('is_active', true)->get();
         return view('request.edit', compact('requestData', 'categories', 'users'));
@@ -216,14 +237,22 @@ class RequestController extends Controller
 
         $requestData = RequestModel::where('slug', $slug)->firstOrFail();
 
-        $requestData->update([
-            'category_id' => $validated['category_id'],
-            'user_id' => $validated['user_id'],
-            'assigned_to' => $validated['assigned_to'] ?? null,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'priority' => $validated['priority'],
-        ]);
+        try {
+
+            $requestData->update([
+                'category_id' => $validated['category_id'],
+                'user_id' => $validated['user_id'],
+                'assigned_to' => $validated['assigned_to'] ?? null,
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'priority' => $validated['priority'],
+            ]);
+        } catch (QueryException $e) {
+
+            return back()
+                ->withInput()
+                ->with('error', 'Data request gagal diperbarui. Silakan coba lagi.');
+        }
 
         return redirect()
             ->route('IndexRequest')
@@ -238,12 +267,18 @@ class RequestController extends Controller
 
         $requestData = RequestModel::where('slug', $slug)->firstOrFail();
 
-        $requestData->update([
-            'status' => $validated['status'],
-        ]);
+        try {
 
-        return redirect()
-            ->back()
+            $requestData->update([
+                'status' => $validated['status'],
+            ]);
+        } catch (QueryException $e) {
+
+            return back()
+                ->with('error', 'Status gagal diperbarui. Silakan coba lagi.');
+        }
+
+        return back()
             ->with('success', 'Status berhasil diperbarui.');
     }
 
@@ -254,7 +289,14 @@ class RequestController extends Controller
     {
         $requestData = RequestModel::where('slug', $slug)->firstOrFail();
 
-        $requestData->delete();
+        try {
+
+            $requestData->delete();
+        } catch (QueryException $e) {
+
+            return back()
+                ->with('error', 'Request gagal dihapus. Silakan coba lagi.');
+        }
 
         return redirect()
             ->route('IndexRequest')

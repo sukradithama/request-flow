@@ -35,9 +35,14 @@
                                 type="text"
                                 name="name"
                                 id="name"
-                                class="form-control"
+                                class="form-control @error('name') is-invalid @enderror"
                                 value="{{ old('name') }}"
                                 required>
+                            @error('name')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
@@ -49,9 +54,14 @@
                                 type="email"
                                 name="email"
                                 id="email"
-                                class="form-control"
+                                class="form-control @error('email') is-invalid @enderror"
                                 value="{{ old('email') }}"
                                 required>
+                            @error('email')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
@@ -63,8 +73,13 @@
                                 type="password"
                                 name="password"
                                 id="password"
-                                class="form-control"
+                                class="form-control @error('password') is-invalid @enderror"
                                 required>
+                            @error('password')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
@@ -87,7 +102,7 @@
 
                     <div class="text-center mt-3">
                         <span>Already have an account?</span>
-                        <a href="{{ route('LoginForm') }}">
+                        <a href="{{ route('login') }}">
                             Login
                         </a>
                     </div>

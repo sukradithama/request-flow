@@ -41,7 +41,7 @@
                     <select
                         name="category_id"
                         id="category_id"
-                        class="form-select"
+                        class="form-select @error('category_id') is-invalid @enderror"
                         required>
 
                         <option value="">
@@ -59,7 +59,11 @@
                         @endforeach
 
                     </select>
-
+                    @error('category_id')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 
@@ -132,11 +136,15 @@
                         type="text"
                         name="title"
                         id="title"
-                        class="form-control"
+                        class="form-control @error('title') is-invalid @enderror"
                         value="{{ old('title') }}"
                         placeholder="Enter request title"
                         required>
-
+                    @error('title')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 
@@ -150,11 +158,15 @@
                     <textarea
                         name="description"
                         id="description"
-                        class="form-control"
+                        class="form-control @error('description') is-invalid @enderror"
                         rows="5"
                         placeholder="Describe your request..."
                         required>{{ old('description') }}</textarea>
-
+                    @error('description')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 
@@ -168,7 +180,7 @@
                     <select
                         name="priority"
                         id="priority"
-                        class="form-select"
+                        class="form-select @error('priority') is-invalid @enderror"
                         required>
 
                         <option
@@ -196,7 +208,11 @@
                         </option>
 
                     </select>
-
+                    @error('priority')
+                    <div class="invalid-feedback">
+                        {{ $message }}
+                    </div>
+                    @enderror
                 </div>
 
 

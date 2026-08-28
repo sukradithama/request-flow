@@ -13,22 +13,6 @@
 
                 <div class="card-body">
 
-                    @if (session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                    @endif
-
-                    @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    @endif
-
                     <form action="{{ route('Login') }}" method="POST">
                         @csrf
 
@@ -41,9 +25,14 @@
                                 type="email"
                                 name="email"
                                 id="email"
-                                class="form-control"
+                                class="form-control @error('email') is-invalid @enderror"
                                 value="{{ old('email') }}"
                                 required>
+                            @error('email')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
@@ -55,8 +44,13 @@
                                 type="password"
                                 name="password"
                                 id="password"
-                                class="form-control"
+                                class="form-control @error('password') is-invalid @enderror"
                                 required>
+                            @error('password')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                            @enderror
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">
